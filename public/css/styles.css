@@ -4,13 +4,22 @@ body {
 }
 
 .centered {
-    padding-top: 200px;
     text-align: center;
 }
 
 .secret-text {
-  text-align: center;
   font-size: 2rem;
   color: #fff;
   background-color: #000;
+  height: 20rem;
+  border: 1px solid lime;
+  border-radius: 10px;
+}
+
+.row {
+  align-items: center;
+}
+
+.col-sm-12 {
+  margin-bottom: 50px;
 }
