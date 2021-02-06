@@ -74,7 +74,7 @@ mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.
         callbackURL: "https://our-secrets.herokuapp.com/auth/google/secrets",
         userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
       },
-      function(accessToken, refreshToken, profile, cb) {
+      function(resolve, reject, accessToken, refreshToken, profile, cb) {
         if(profile){
           User.findOrCreate({
             console.log(profile.id)
@@ -83,7 +83,7 @@ mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.
             return cb(err, user);
           });
         } else {
-          console.log("User undefined in GoogleStrategyPassport");
+          console.log("User undefined in GoogleStrategyPassport", reject);
         }
       }
     ));
