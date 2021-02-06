@@ -71,15 +71,20 @@ mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.
     passport.use(new GoogleStrategy({
         clientID: process.env.CLIENT_ID,
         clientSecret: process.env.CLIENT_SECRET,
-        callbackURL: "http://localhost:3000/auth/google/secrets",
+        callbackURL: "https://our-secrets.herokuapp.com/auth/google/secrets",
         userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
       },
       function(accessToken, refreshToken, profile, cb) {
-        User.findOrCreate({
-          googleId: profile.id
-        }, function(err, user) {
-          return cb(err, user);
-        });
+        if(profile){
+          User.findOrCreate({
+            console.log(profile.id)
+            googleId: profile.id
+          }, function(err, user) {
+            return cb(err, user);
+          });
+        } else {
+          console.log("User undefined in GoogleStrategyPassport");
+        }
       }
     ));
 
