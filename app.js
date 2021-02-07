@@ -77,7 +77,6 @@ mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.
       function(resolve, reject, accessToken, refreshToken, profile, cb) {
         if(profile){
           User.findOrCreate({
-            console.log(profile.id)
             googleId: profile.id
           }, function(err, user) {
             return cb(err, user);
