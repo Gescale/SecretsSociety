@@ -71,7 +71,7 @@ mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.
     passport.use(new GoogleStrategy({
         clientID: process.env.CLIENT_ID,
         clientSecret: process.env.CLIENT_SECRET,
-        callbackURL: "https://our-secrets.herokuapp.com/auth/google/secrets",
+        callbackURL: "https://secrets-society.herokuapp.com/auth/google/secrets",
         userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
       },
       function(resolve, reject, accessToken, refreshToken, profile, cb) {
