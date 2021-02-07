@@ -8,6 +8,7 @@
   "description": "this is a secrtets application",
   "main": "app.js",
   "scripts": {
+    "start": "app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "gescale",
@@ -18,7 +19,6 @@
     "dotenv": "^8.2.0",
     "ejs": "^3.1.5",
     "express": "^4.17.1",
-    "cookie-session": "^1.17.1",
     "mongoose": "^5.10.15",
     "mongoose-encryption": "^2.0.2",
     "mongoose-findorcreate": "^3.0.0",
