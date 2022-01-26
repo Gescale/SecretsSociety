@@ -31,10 +31,15 @@ app.use(passport.session());
 
 
 
-mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.net/userDB?retryWrites=true&w=majority", {
+// mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.net/userDB?retryWrites=true&w=majority", {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true
+//   }, )
+
+mongoose.connect("mongodb://localhost:27017/userDB", {
     useNewUrlParser: true,
     useUnifiedTopology: true
-  }, )
+  })
   .catch(err => {
     console.error(err.stack)
     process.exit(1)
@@ -44,11 +49,23 @@ mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.
     mongoose.set("useCreateIndex", true);
 
     const Schema = mongoose.Schema;
+
+    const starSchema = new Schema({
+      userId: String,
+      postId: String
+    });
+
+    const secretsSchema = new Schema({
+      secret: String,
+      likes: [String]
+    });
+
     const userSchema = new Schema({
       email: String,
       password: String,
       googleId: String,
-      secrets: [String]
+      stars: [starSchema],
+      secrets: [secretsSchema]
     });
 
     userSchema.plugin(passportLocalMongoose);
@@ -56,6 +73,10 @@ mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.
 
     const User = mongoose.model("User", userSchema);
 
+
+
+
+//////////////////////////   Passport Authentication  ///////////////////////////////////////////////
     passport.use(User.createStrategy());
 
     passport.serializeUser(function(user, done) {
@@ -87,9 +108,6 @@ mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.
       }
     ));
 
-    app.get("/", (req, res) => {
-      res.render("home");
-    });
 
     app.get("/auth/google",
       passport.authenticate("google", {
@@ -104,36 +122,79 @@ mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.
       function(req, res) {
         // Successfull authentication redirect to secrets
         res.redirect("/secrets");
-      });
+      }
+    );
 
-    app.get("/login", (req, res) => {
-      res.render("login");
+
+    ////////////////////////////   Basic Gets      ///////////////////////
+    app.get("/", (req, res) => {
+      res.render("home");
     });
 
-    app.get("/register", (req, res) => {
-      res.render("register");
-    });
 
     app.get("/secrets", function(req, res) {
-      User.find(/*{secrets: ['$in']},*/
-      function(err, foundUsers) {
-        if (err) {
-          console.log(err);
-        } else {
-          if (foundUsers) {
-            console.log(foundUsers);
-            res.render("secrets", {
-              usersWithSecrets: foundUsers
-            });
+      if(req.isAuthenticated()){
+        User.find(/*{secrets: ['$in']},*/
+        function(err, foundUsers) {
+          if (err) {
+            console.log(err);
+          } else {
+            if (foundUsers) {
+              // Load every Secret into one new Array
+              let newArray = [];
+              foundUsers.forEach((oneUser)=>{
+                oneUser.secrets.forEach((secret, id) => {
+                  newArray.push([oneUser.id, secret, id])
+                })
+              })
+
+              // Shuffle the Array
+              // function shuffleArray(array) {
+              //   for (let i = array.length - 1; i > 0; i--) {
+              //     const j = Math.floor(Math.random() * (i + 1));
+              //     [array[i], array[j]] = [array[j], array[i]];
+              //   }
+              // }
+
+              function shuffle(array) {
+                array.sort(() => Math.random() - 0.5);
+              }
+
+              let shuffledArray = shuffle(newArray);
+              console.log(shuffledArray);
+
+              res.render("secrets", {
+                usersWithSecrets: foundUsers,
+                myId : req.user.id
+              });
+            }
           }
-        }
-      });
+        });
+      } else {
+        res.redirect("/login");
+      }
     });
 
-    app.get("/logout", function(req, res) {
-      req.logout();
-      res.redirect("/");
+    app.get("/user/:userId", function(req, res) {
+      if(req.isAuthenticated()){
+        User.findById(req.user.id,
+        function(err, foundUser) {
+          if (err) {
+            console.log(err);
+          } else {
+            if (foundUser) {
+              res.render("secrets", {
+                usersWithSecrets: [foundUser],
+                myId : req.user.id
+              });
+            }
+          }
+        });
+      } else {
+        res.redirect("/login");
+      }
     });
+
 
     app.get("/submit", function(req, res) {
       if (req.isAuthenticated()) {
@@ -143,24 +204,15 @@ mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.
       }
     });
 
-    app.post("/register", function(req, res) {
+    //////////////////////////   Secrets  Submit   ///////////////////////////////////////////////
 
-      User.register({
-        username: req.body.username
-      }, req.body.password, function(err, user) {
-        if (err) {
-          console.log(err);
-          res.redirect("/register");
-        } else {
-          passport.authenticate("local")(req, res, function() {
-            res.redirect("/secrets");
-          });
-        }
-      });
-    });
+    
 
     app.post("/send", function(req, res) {
-      const submittedSecret = req.body.secret;
+      const submittedSecret = {
+        secret: req.body.secret,
+        likes: []
+      };
       User.findById(req.user.id, function(err, foundUser) {
         if (err) {
           console.log(err);
@@ -178,6 +230,20 @@ mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.
       });
     });
 
+
+
+    ///////////////////////////////////// Login And Logout  /////////////////////////////////////////
+
+    app.get("/login", (req, res) => {
+      res.render("login");
+    });
+
+
+    app.get("/register", (req, res) => {
+      res.render("register");
+    });
+
+
     app.post("/login", function(req, res) {
 
       const user = new User({
@@ -185,6 +251,7 @@ mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.
         password: req.body.password
       });
 
+      
       req.login(user, function(err) {
         if (err) {
           console.log(err);
@@ -196,7 +263,154 @@ mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.
       });
     });
 
+
+    app.post("/register", function(req, res) {
+      User.register({
+        username: req.body.username
+      }, req.body.password, function(err, user) {
+        if (err) {
+          console.log(err);
+          res.redirect("/register");
+        } else {
+          passport.authenticate("local")(req, res, function() {
+            res.redirect("/secrets");
+          });
+        }
+      });
+    });
+
+
+    app.get("/logout", function(req, res) {
+      req.logout();
+      res.redirect("/");
+    });
+
+
+/////////////////////////////////////////// Likes ////////////////////////////////////////////////
+
+
+    app.get("/like/:userId/:postId", function(req, res) {
+      User.findById(req.params.userId, function(err, foundUser) {
+        if (err) {
+          console.log(err);
+        } else {
+          if (foundUser) {
+            foundUser.secrets[req.params.postId].likes.push(req.user.id);
+            foundUser.save(function() {
+              res.redirect("/secrets");
+            });
+          } else {
+            console.log("not found");
+          }
+        }
+      });
+    });
+
+
+// //////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////              STARS           ////////////////////////////////////////
+
+
+    app.get("/star/:userId/:postId", function(req, res) {
+      User.findById(req.user.id, function(err, foundUser) {
+        if (err) {
+          console.log(err);
+        } else {
+          if (foundUser) {
+            // foundUser.secrets = submittedSecret;
+            const star = {
+              userId: req.params.userId,
+              postId: req.params.postId
+            };
+            foundUser.stars.push(star);
+            foundUser.save(function() {
+              res.redirect("/secrets");
+            });
+          } else {
+            console.log("not found");
+          }
+        }
+      });
+    });
+
+// //////////////////////////////   Me    //////////////////////////////////////////////////////////////
+
+    app.get("/me/stars/", function(req, res) {
+      if(req.isAuthenticated()){
+        const myStarsRefs = req.user.stars;
+        // const secretKeeper = [User.ObjectId('61e1fcf25794ec2780d4c3fe'), User.ObjectId('61e1fa4329fb443de8b4ab80'), User.ObjectId('61e1f9bc9bbbc1150082d73f')];
+
+        myStarsRefs.map(function (star){
+          User.findById("61ec3e319303a9282c3cafdc", function(err, response){
+            if(response){
+              console.log("Response : ", response, "Error : ", err);
+              // res.render("my_stars", {
+              //   actualSecrets: [response]
+              // });
+            } else {
+              console.log("Response : ", response, "Error : ", err);
+            }
+          })
+        });
+      } else {
+        res.redirect("/login");
+      }
+    });
+
+
+    app.get("/me/posts/delete/:postId", function(req, res) {
+      User.findById( req.user.id , function(err, foundUser){
+        if(foundUser){
+          foundUser.secrets.splice(req.params.postId, 1);
+          foundUser.save(function() {
+            res.redirect("/me/posts");
+          });
+        } else {
+          console.log(err);
+        }
+      });
+    });
+
+    app.get("/me/posts", function(req, res){
+      res.render("my_posts", {usersWithSecrets: [req.user]});
+    })
+
+
+
+//////////////////////////////// The Code that drove me crazy //////////////////////////////////////////////
+
+// app.get("/me/stars/", function(req, res) {
+//   if(req.isAuthenticated()){
+//     var myStarsRefs = req.user.stars;
+//     let starsArr = [];
+
+
+//     myStarsRefs.map(oneStar => {
+//       User.findById(oneStar.userId, async function(err, foundUser) {
+//         if(foundUser){
+//           starsArr.push(foundUser.secrets[oneStar.postId]);
+//         } else {
+//           console.log(err);
+//         }
+//       })
+
+//       console.log(starsArr);
+//     })   
+
+//     setTimeout(function(){
+//       res.render("my_stars", {
+//         actualSecrets: starsArr
+//       });
+//     },1000); //delay is in milliseconds
+
+//   } else {
+//     res.redirect("/login");
+//   }
+// });
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     app.listen(process.env.PORT || 3000, () => {
       console.log("Server running on port 3000");
     });
-  });
+});

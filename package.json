@@ -8,10 +8,10 @@
   "description": "this is a secrtets application",
   "main": "app.js",
   "scripts": {
-    "start": "app.js",
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "gescale",
+  "author": "Gescale",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.0",
@@ -23,7 +23,7 @@
     "mongoose": "^5.10.15",
     "mongoose-encryption": "^2.0.2",
     "mongoose-findorcreate": "^3.0.0",
-    "nodemon": "^2.0.7",
+    "nodemon": "^2.0.15",
     "passport": "^0.4.1",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
