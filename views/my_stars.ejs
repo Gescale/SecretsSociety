@@ -1,0 +1,50 @@
+<%- include('partials/header') %>
+
+
+<div class="jumbotron text-center">
+  <div class="container-fluid">
+      <div class="row justify-content-md-center">
+        <div class="col col-lg-2">
+          <a class="btn text-danger" aria-disabled="true" href="/me/stars">My Stars</a>
+        </div>
+        <div class="col-md-auto">
+          <a class="btn text-dark" aria-disabled="true" href="/shuffle">Shuffle</a>
+        </div>
+        <div class="col col-lg-2">
+          <a class="btn text-dark" href="/me/posts">My Secrets</a>
+        </div>
+      </div>
+    </div>
+
+    <br>
+    <br>
+
+    <div class="row">
+
+      <% actualSecrets.forEach((secret, id) => { %>
+        <div class="col-lg-4 col-md-6 col-sm-12">
+          <div class="card secret-text" style="min-height: 20rem;">
+            <div class="card-header"><a class="btn text-danger" href="/user/<%=oneUser.id%>">User: <%=oneUser.id%></a></div>
+            <div class="card-body">
+              <p class="card-text"><%=secret.secret%></p>
+            </div>
+            <div class="card-header colourful">
+              <a class="btn text-dark" href="/like/<%=oneUser.id%>/<%=id%>"> <%=(secret.likes).length %> Likes</a>
+              <a class="btn text-danger" href="/star/<%=oneUser.id%>/<%=id%>">UnStar</a>
+              <a class="btn text-dark" href="/share">Share</a>
+            </div>
+          </div>
+        </div>
+      <%  }); %>
+
+    </div>
+
+    <hr>
+
+
+    <a class="btn btn-light btn-md" href="/logout" role="button">Log Out</a>
+    <a class="btn btn-dark btn-md" href="/submit" role="button">Submit a Secret</a>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
