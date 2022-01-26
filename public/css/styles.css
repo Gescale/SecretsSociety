@@ -1,0 +1,44 @@
+*, body {
+  color: black;
+}
+
+.centered {
+  text-align: center;
+}
+
+.secret-text {
+  color: white;
+  margin: 0;
+  background-color: white;
+  height: 20rem;
+  border: 1px solid rgba(231,60,126);
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.row {
+  align-items: center;
+}
+
+.col-sm-12 {
+  margin-bottom: 50px;
+}
+
+.colourful {
+	color: white;
+	background: linear-gradient(-45deg, rgba(238,119,82, 0.3), rgba(231,60,126, 0.3), rgba(35,166,213, 0.3), rgba(35,213,171, 0.3)); 
+	/* #ee7752, #e73c7e, #23a6d5, #23d5ab */
+	background-size: 400% 400%;
+	animation: gradientBG 15s ease infinite;
+}
+@keyframes gradientBG {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
