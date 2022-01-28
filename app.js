@@ -29,13 +29,6 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-
-// mongoose.connect("mongodb+srv://admin-gesy:realjembure@soft-mambo.mdxof.mongodb.net/userDB?retryWrites=true&w=majority", {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true
-//   }, )
-
 mongoose.connect("mongodb://localhost:27017/userDB", {
     useNewUrlParser: true,
     useUnifiedTopology: true
