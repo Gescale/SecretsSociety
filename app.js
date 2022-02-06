@@ -12,6 +12,7 @@ const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const findOrCreate = require("mongoose-findorcreate");
+const iterStars = require('./support_functions/iterStars');
 
 const app = express();
 
@@ -174,6 +175,7 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
         function(err, foundUser) {
           if (err) {
             console.log(err);
+			res.render('404');
           } else {
             if (foundUser) {
               res.render("secrets", {
@@ -328,23 +330,25 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
 
 // //////////////////////////////   Me    //////////////////////////////////////////////////////////////
 
-    app.get("/me/stars/", function(req, res) {
-      if(req.isAuthenticated()){
-        const myStarsRefs = req.user.stars;
-        // const secretKeeper = [User.ObjectId('61e1fcf25794ec2780d4c3fe'), User.ObjectId('61e1fa4329fb443de8b4ab80'), User.ObjectId('61e1f9bc9bbbc1150082d73f')];
+    ////////////////// Logic for the code below /////////////////////
+    // 1. await (get one star)
+    // 2. await(getUserById)
+    // 3. await(extract post)
+    // 4. push into array
+    // 5. await(itterate the above)
+    // 6. await(when done return the posts array)
 
-        myStarsRefs.map(function (star){
-          User.findById("61ec3e319303a9282c3cafdc", function(err, response){
-            if(response){
-              console.log("Response : ", response, "Error : ", err);
-              // res.render("my_stars", {
-              //   actualSecrets: [response]
-              // });
-            } else {
-              console.log("Response : ", response, "Error : ", err);
-            }
-          })
-        });
+
+    app.get("/me/stars/", async function(req, res) {
+      if(req.isAuthenticated()){
+        try {
+          const myStarsRefs = req.user.stars;
+          const starsPosts = await iterStars(myStarsRefs); 
+          console.log(starsPosts);
+        } catch (error) {
+          console.log(error)
+        }
+
       } else {
         res.redirect("/login");
       }
