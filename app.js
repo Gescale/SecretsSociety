@@ -122,7 +122,11 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
 
     ////////////////////////////   Basic Gets      ///////////////////////
     app.get("/", (req, res) => {
-      res.render("home");
+      if(req.isAuthenticated()){
+        res.redirect("secrets");
+      } else {
+        res.render("home");
+      }
     });
 
 
@@ -134,29 +138,6 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
             console.log(err);
           } else {
             if (foundUsers) {
-              // Load every Secret into one new Array
-              let newArray = [];
-              foundUsers.forEach((oneUser)=>{
-                oneUser.secrets.forEach((secret, id) => {
-                  newArray.push([oneUser.id, secret, id])
-                })
-              })
-
-              // Shuffle the Array
-              // function shuffleArray(array) {
-              //   for (let i = array.length - 1; i > 0; i--) {
-              //     const j = Math.floor(Math.random() * (i + 1));
-              //     [array[i], array[j]] = [array[j], array[i]];
-              //   }
-              // }
-
-              function shuffle(array) {
-                array.sort(() => Math.random() - 0.5);
-              }
-
-              let shuffledArray = shuffle(newArray);
-              console.log(shuffledArray);
-
               res.render("secrets", {
                 usersWithSecrets: foundUsers,
                 myId : req.user.id
@@ -168,6 +149,16 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
         res.redirect("/login");
       }
     });
+
+    // Serch User By Id
+    app.post("/secrets/", function(req, res) {
+      if(req.isAuthenticated()){
+        res.redirect(`/user/${req.body.search}`);
+      } else {
+        res.redirect("/login");
+      }
+    });
+
 
     app.get("/user/:userId", function(req, res) {
       if(req.isAuthenticated()){
@@ -219,7 +210,7 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
               res.redirect("/secrets");
             });
           } else {
-            console.log("not found");
+            console.log("User not found, to submmit secret");
           }
         }
       });
@@ -295,7 +286,7 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
               res.redirect("/secrets");
             });
           } else {
-            console.log("not found");
+            console.log("User not found to like post");
           }
         }
       });
@@ -322,7 +313,7 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
               res.redirect("/secrets");
             });
           } else {
-            console.log("not found");
+            console.log("User not found to star a post");
           }
         }
       });
@@ -408,6 +399,6 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     app.listen(process.env.PORT || 3000, () => {
-      console.log("Server running on port 3000");
+      console.log("Yay... Server running on port 3000!");
     });
 });
