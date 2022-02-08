@@ -44,11 +44,6 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
 
     const Schema = mongoose.Schema;
 
-    const starSchema = new Schema({
-      userId: String,
-      postId: String
-    });
-
     const secretsSchema = new Schema({
       secret: String,
       likes: [String]
@@ -58,7 +53,7 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
       email: String,
       password: String,
       googleId: String,
-      stars: [starSchema],
+      stars: [String],
       secrets: [secretsSchema]
     });
 
@@ -281,10 +276,14 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
           console.log(err);
         } else {
           if (foundUser) {
-            foundUser.secrets[req.params.postId].likes.push(req.user.id);
-            foundUser.save(function() {
+            if(foundUser.secrets[req.params.postId].likes.includes(req.user.id)){
+              foundUser.secrets[req.params.postId].likes.push(req.user.id);
+              foundUser.save(function() {
+                res.redirect("/secrets");
+              });
+            } else {
               res.redirect("/secrets");
-            });
+            }
           } else {
             console.log("User not found to like post");
           }
@@ -297,23 +296,25 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
 //////////////////////////              STARS           ////////////////////////////////////////
 
 
-    app.get("/star/:userId/:postId", function(req, res) {
+    app.get("/favs/:userId", function(req, res) {
       User.findById(req.user.id, function(err, foundUser) {
         if (err) {
           console.log(err);
         } else {
           if (foundUser) {
-            // foundUser.secrets = submittedSecret;
-            const star = {
-              userId: req.params.userId,
-              postId: req.params.postId
-            };
-            foundUser.stars.push(star);
-            foundUser.save(function() {
+            if(!(foundUser.stars.includes(req.params.userId))){
+              foundUser.stars.push(req.params.userId);
+              console.log(foundUser.stars);
+              console.log(req.params.userId);
+              foundUser.save(function() {
+                res.redirect("/secrets");
+              });
+            } else {
               res.redirect("/secrets");
-            });
+            }
           } else {
-            console.log("User not found to star a post");
+            console.log("User not found to add to follow");
+            res.redirect("secrets");
           }
         }
       });
@@ -321,25 +322,11 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
 
 // //////////////////////////////   Me    //////////////////////////////////////////////////////////////
 
-    ////////////////// Logic for the code below /////////////////////
-    // 1. await (get one star)
-    // 2. await(getUserById)
-    // 3. await(extract post)
-    // 4. push into array
-    // 5. await(itterate the above)
-    // 6. await(when done return the posts array)
-
-
-    app.get("/me/stars/", async function(req, res) {
+    app.get("/favs/", function(req, res) {
       if(req.isAuthenticated()){
-        try {
-          const myStarsRefs = req.user.stars;
-          const starsPosts = await iterStars(myStarsRefs); 
-          console.log(starsPosts);
-        } catch (error) {
-          console.log(error)
-        }
-
+        res.render("favs", {
+          "favs" : req.user.stars
+        })
       } else {
         res.redirect("/login");
       }
