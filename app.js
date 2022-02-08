@@ -372,11 +372,9 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
 //       console.log(starsArr);
 //     })   
 
-//     setTimeout(function(){
-//       res.render("my_stars", {
-//         actualSecrets: starsArr
-//       });
-//     },1000); //delay is in milliseconds
+//    res.render("my_stars", {
+//       actualSecrets: starsArr
+//    })
 
 //   } else {
 //     res.redirect("/login");
